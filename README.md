@@ -9,6 +9,16 @@ For the users' database, please create it following the instructions
 or
 [here](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/). Then put the generated `.htpasswd` file into the `config/` folder.
 
+In a nutshell
+1. Install `apache2-utils`
+  ```bash
+  sudo apt-get install apache2-utils
+  ```
+2. Create at leas one user
+  ```bash
+  sudo htpasswd ./.htpasswd user1
+  ```
+
 ## Run the service
 
 1. Build
