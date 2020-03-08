@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  mlflow-server:
+    container_name: mlflow-server
+    build: .
+    image: mlflow-server
+    restart: always
+    volumes:
+      - data-volume:/app/mlruns
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    ports:
+      - "5555:5555"
+    depends_on:
+      - mlflow-server
+    restart: always
+    secrets:
+      - nginx_conf
+      - nginx_htpasswd
+
+volumes:
+  data-volume:
+
+secrets:
+  nginx_conf:
+    file: ./config/nginx.conf
+  nginx_htpasswd:
+    file: ./config/.htpasswd
