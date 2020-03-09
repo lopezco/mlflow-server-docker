@@ -15,7 +15,7 @@ In a nutshell
     sudo apt-get install apache2-utils
     ```
 
-2. Create at leas one user
+2. Create at least one user
     ```bash
     sudo htpasswd ./.htpasswd user1
     ```
