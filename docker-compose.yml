@@ -7,25 +7,17 @@ services:
     image: mlflow-server
     restart: always
     volumes:
-      - data-volume:/app/mlruns
+      - ./mlruns:/app/mlruns
 
   nginx:
     container_name: nginx
     image: nginx
     ports:
-      - "5555:5555"
+      - "5555:80"
     depends_on:
       - mlflow-server
     restart: always
-    secrets:
-      - nginx_conf
-      - nginx_htpasswd
-
-volumes:
-  data-volume:
-
-secrets:
-  nginx_conf:
-    file: ./config/nginx.conf
-  nginx_htpasswd:
-    file: ./config/.htpasswd
+    links:
+      - mlflow-server
+    volumes:
+      - ./config:/etc/nginx

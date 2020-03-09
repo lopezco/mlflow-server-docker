@@ -13,4 +13,4 @@ COPY . /app
 EXPOSE 5000
 
 # Launch app
-CMD mlflow server --host 0.0.0.0 --port 5000
+CMD mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /app/mlruns
