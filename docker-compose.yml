@@ -1,23 +1,65 @@
 version: '3.3'
 
 services:
-  mlflow-server:
-    container_name: mlflow-server
-    build: .
-    image: mlflow-server
-    restart: always
-    volumes:
-      - ./mlruns:/app/mlruns
+  server:
+    hostname: mlflow-server
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "5000:5000"
+    environment:
+      - AWS_ACCESS_KEY_ID=my_access_keymy_secret_key
+      - AWS_SECRET_ACCESS_KEY=my_secret_key
+      - MLFLOW_BACKEND_STORE_URI=postgresql+psycopg2://mlflow:mlflow123@postgres:5432/mlflow
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=s3://mlflow-artifacts
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - GUNICORN_TIMEOUT=600
+      - ENABLE_AUTO_DB_MIGRATIONS=1
+    depends_on:
+      - db
+      - minio
+
+  db:
+    image: postgres:14.2-alpine
+    hostname: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=mlflow
+      - POSTGRES_PASSWORD=mlflow123
+      - POSTGRES_DB=mlflow
+
+  minio:
+    image: minio-test:latest
+    container_name: minio
+    environment:
+      - MINIO_SECRET_KEY=my_secret_key
+      - MINIO_ACCESS_KEY=my_access_key
+    command: minio server /minio --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://127.0.0.1:9000/minio/health/live"
+        ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
   nginx:
-    container_name: nginx
     image: nginx
+    hostname: nginx
     ports:
       - "5555:80"
     depends_on:
-      - mlflow-server
-    restart: always
+      - server
     links:
-      - mlflow-server
+      - server
     volumes:
       - ./config:/etc/nginx
