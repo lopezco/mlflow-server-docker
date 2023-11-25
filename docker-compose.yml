@@ -16,9 +16,10 @@ services:
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
       - GUNICORN_TIMEOUT=600
       - ENABLE_AUTO_DB_MIGRATIONS=1
+    restart: on-failure
     depends_on:
       - db
-      - minio
+      - createbuckets
 
   db:
     image: postgres:14.2-alpine
@@ -31,7 +32,7 @@ services:
       - POSTGRES_DB=mlflow
 
   minio:
-    image: minio-test:latest
+    image: minio/minio:latest
     container_name: minio
     environment:
       - MINIO_SECRET_KEY=my_secret_key
@@ -51,6 +52,18 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 my_access_key my_secret_key;
+      /usr/bin/mc mb myminio/mlflow-artifacts;
+      /usr/bin/mc policy set public myminio/mlflow-artifacts;
+      exit 0;
+      "
 
   nginx:
     image: nginx
