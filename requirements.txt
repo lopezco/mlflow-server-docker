@@ -1,4 +1,4 @@
-mlflow==2.9.2
+mlflow==2.12.1
 # Tracking server DB
 psycopg2-binary==2.9.3
 # Artifact Store
